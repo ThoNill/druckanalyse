@@ -30,6 +30,7 @@ public class DruckanalyseTest {
 		register.inputLine("input:ab2:data:stuttgart");
 		register.inputLine("name      susanne|w|stuttgart");
 		register.inputLine("input:ab2:stop");
+		register.inputLine("");
 
 		
 		register.inputLine("input:ab1:stop");

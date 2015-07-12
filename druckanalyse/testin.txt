@@ -1,0 +1,15 @@
+input:ab1:sql:select name , gebdatum, ort from kunde
+input:ab1:start
+input:ab1:data:thomas|30011962
+input:ab2:sql:select  ort from adresse 
+input:ab2:start:thomas
+input:ab2:data:München
+name      thomas|m|münchen
+input:ab2:stop
+input:ab1:data:susanne|30071965
+input:ab2:sql:select  ort from adresse 
+input:ab2:start:susanne
+input:ab2:data:stuttgart
+name      susanne|w|stuttgart
+input:ab2:stop
+input:ab1:stop
