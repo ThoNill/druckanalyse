@@ -1,7 +1,7 @@
 package thomas.nill.druckanalyse;
 
 public abstract class ZeilenRegister {
-	final int PREFIXLÄNGE = 10;
+	public static int PREFIXLÄNGE = 10;
 	
 	public ZeilenRegister() {
 		super();
