@@ -51,12 +51,18 @@ public class Ausgabe {
 
 	private void print(Abfrage a, int stufe) {
 		print(stufe);
-		print("select '" + a.getName() + "' '" + a.getStatement() + "' \n");
+		print("sql: " + a.getName() + " '" + a.getStatement() + "' \n");
 		print(stufe);
-		print("into (");
+		print("into: (");
 
-		a.getFelder().stream().forEach(p -> System.out.print(p + " :: "));
+		StringBuffer parameterliste = new StringBuffer();
+		a.getFelder().stream().forEach(p -> parameterliste.append("," + a.getName() + "_" + p) );
 		
+		String sParameterListe = parameterliste.toString();
+		
+		if (sParameterListe.length()>1) {
+			print(sParameterListe.substring(1));
+		}
 		print(") {\n");
 
 		for (FeldReihe io : a.getChilds()) {
@@ -73,7 +79,7 @@ public class Ausgabe {
 
 	private void printOutput(FeldReihe io, int stufe) {
 		print(stufe);
-		print("output '" + io.getName() + "' ");
+		print("export: " + io.getName() + " (");
 
 		Object o[] = verbindungen.stream()
 				.filter(p -> p.getOutName().equals(io.getName()))
@@ -88,14 +94,14 @@ public class Ausgabe {
 				print("unbestimmt");
 				pos++;
 			}
-			if (pos > 0) {
+			if (pos > 0 ) {
 				print(",");
 			}
 			
-			print(c.getInName() + "." + register.getFeldName(c));
+			print(c.getInName() + "_" + register.getFeldName(c));
 			pos++;
 		}
-		print("\n");
+		print(")\n");
 
 	}
 
