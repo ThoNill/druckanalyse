@@ -9,20 +9,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.List;
+import java.util.Vector;
 
-public class DruckAnalyse {
+public class DruckAnalyse extends ZeilenRegister {
 	AbfrageRegister abfrageRegister = new AbfrageRegister();
 	FeldReihenRegister connectionRegister = new FeldReihenRegister();
+	List<String> ohneStopOhneData = new Vector<String>();
+	List<String> ohneStopMitData = new Vector<String>();
 
 	public DruckAnalyse() {
 
 	}
 
-	public void inputLine(String line) {
-		abfrageRegister.zeileBearbeiten(line);
-		connectionRegister.zeileBearbeiten(line);
-	}
-
+		
 	public void ausgabe(OutputStream out) {
 		Ausgabe ausgabe = new Ausgabe(out,
 				connectionRegister.getMatchingConnections(), abfrageRegister);
@@ -35,7 +35,12 @@ public class DruckAnalyse {
 				if (args.length >= 3) {
 					ZeilenRegister.PREFIXLÄNGE = Integer.parseInt(args[2]);
 				}
+				ErgänzeFehlendeStopsRegister ergänzeStops = new ErgänzeFehlendeStopsRegister();
+				ergänzeStops.readFile(args[0]);
+				
 				DruckAnalyse analyse = new DruckAnalyse();
+				analyse.ohneStopMitData = ergänzeStops.getAbfragenOhneStopMitData();
+				analyse.ohneStopOhneData = ergänzeStops.getAbfragenOhneStopUndData();
 				analyse.readFile(args[0]);
 				analyse.writeFile(args[1]);
 			} else {
@@ -55,15 +60,31 @@ public class DruckAnalyse {
 
 	}
 
-	private void readInputStream(Reader input) {
-		BufferedReader bStream = new BufferedReader(input);
-		bStream.lines().forEach(line -> inputLine(line));
+	@Override
+	protected void bearbeite(String name, String command, String parameter) {
+		abfrageRegister.bearbeite(name,command,parameter);
+		connectionRegister.bearbeite(name,command,parameter);
+		if ("start".equals(command) && ohneStopOhneData.contains(name)) {
+			stopDazu(name, parameter);
+		}
+		if ("data".equals(command) && ohneStopMitData.contains(name)) {
+			stopDazu(name, parameter);
+		}
 	}
 
-	private void readFile(String filename) throws IOException {
-		Reader fileStream = new FileReader(filename);
-		readInputStream(fileStream);
-		fileStream.close();
+
+	protected void stopDazu(String name, String parameter) {
+		abfrageRegister.bearbeite(name,"stop",parameter);
+		connectionRegister.bearbeite(name,"stop",parameter);
 	}
+
+	@Override
+	protected void bearbeite(DatenZeile zeile) {
+		abfrageRegister.bearbeite(zeile);
+		connectionRegister.bearbeite(zeile);
+		
+	}
+
+
 
 }

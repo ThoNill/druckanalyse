@@ -20,9 +20,7 @@ public class FeldReihenRegister extends ZeilenRegister {
 		case "data" : {
 			datenZeilen.put(new DatenZeile(name,parameter));
 		} break;
-		case "stop" : {
-			datenZeilen.remove(name);
-		} break;
+		case "stop" : break;
 		
 		}
 		

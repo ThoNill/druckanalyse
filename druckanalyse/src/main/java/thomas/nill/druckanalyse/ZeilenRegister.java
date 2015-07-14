@@ -1,5 +1,10 @@
 package thomas.nill.druckanalyse;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+
 public abstract class ZeilenRegister {
 	public static int PREFIXLÄNGE = 10;
 	
@@ -29,5 +34,16 @@ public abstract class ZeilenRegister {
 			String parameter);
 
 	protected abstract void bearbeite(DatenZeile zeile);
+	
+	private void readInputStream(Reader input) {
+		BufferedReader bStream = new BufferedReader(input);
+		bStream.lines().forEach(line -> zeileBearbeiten(line));
+	}
+
+	public void readFile(String filename) throws IOException {
+		Reader fileStream = new FileReader(filename);
+		readInputStream(fileStream);
+		fileStream.close();
+	}
 
 }
