@@ -4,10 +4,10 @@ import java.util.HashMap;
 
 public class DatenZeilenHash extends HashMap<String, DatenZeile> {
 
-	public DatenZeilenHash() {
-	}
+    public DatenZeilenHash() {
+    }
 
-	public void put(DatenZeile r) {
-		put(r.getName(), r);
-	}
+    public void put(DatenZeile r) {
+        put(r.getName(), r);
+    }
 }

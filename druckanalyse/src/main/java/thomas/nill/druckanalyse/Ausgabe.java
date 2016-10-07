@@ -7,102 +7,111 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 public class Ausgabe {
-	OutputStream outStream;
-	List<FeldVerbindung> verbindungen;
-	AbfrageRegister register = null;
-	
+    private static final Logger LOG = LogManager.getLogger(Ausgabe.class);
 
-	public Ausgabe(List<FeldVerbindung> connections,AbfrageRegister register) {
-		this(System.out, connections,register);
-	}
+    OutputStream outStream;
+    List<FeldVerbindung> verbindungen;
+    AbfrageRegister register = null;
 
-	public Ausgabe(OutputStream outStream, List<FeldVerbindung> connections,AbfrageRegister register) {
-		this.outStream = outStream;
-		this.verbindungen = connections;
-		this.register = register;
-	}
+    public Ausgabe(List<FeldVerbindung> connections, AbfrageRegister register) {
+        this(System.out, connections, register);
+    }
 
-	public void print(Collection<Abfrage> abfragen) {
-		for (Abfrage a : abfragen) {
-			print(a, 1);
-		}
-	}
+    public Ausgabe(OutputStream outStream, List<FeldVerbindung> connections,
+            AbfrageRegister register) {
+        this.outStream = outStream;
+        this.verbindungen = connections;
+        this.register = register;
+    }
 
-	private void print(String text) {
-		try {
-			outStream.write(text.getBytes(Charset.defaultCharset()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public void print(Collection<Abfrage> abfragen) {
+        for (Abfrage a : abfragen) {
+            print(a, 1);
+        }
+    }
 
-	private void print(int stufe) {
-		try {
-			while (stufe > 0) {
-				outStream.write(' ');
-				outStream.write(' ');
-				stufe--;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    private void print(String text) {
+        try {
+            outStream.write(text.getBytes(Charset.defaultCharset()));
+        } catch (IOException e) {
+            LOG.error("Probleme im outStream", e);
+        }
+    }
 
-	private void print(Abfrage a, int stufe) {
-		print(stufe);
-		print("sql: " + a.getName() + " '" + a.getStatement() + "' \n");
-		print(stufe);
-		print("into: (");
+    private void print(int startStufe) {
+        int stufe = startStufe;
+        try {
+            while (stufe > 0) {
+                outStream.write(' ');
+                outStream.write(' ');
+                stufe--;
+            }
+        } catch (IOException e) {
+            LOG.error("Probleme im outStream", e);
+        }
+    }
 
-		StringBuffer parameterliste = new StringBuffer();
-		a.getFelder().stream().forEach(p -> parameterliste.append("," + a.getName() + "_" + p) );
-		
-		String sParameterListe = parameterliste.toString();
-		
-		if (sParameterListe.length()>1) {
-			print(sParameterListe.substring(1));
-		}
-		print(") {\n");
+    private void print(Abfrage a, int stufe) {
+        print(stufe);
+        print("sql: " + a.getName() + " '" + a.getStatement() + "' \n");
+        print(stufe);
+        print("into: (");
 
-		for (FeldReihe io : a.getChilds()) {
-			if (io instanceof Abfrage) {
-				print((Abfrage) io, stufe + 1);
-			} else {
-				printOutput(io, stufe + 1);
-			}
-		}
-		print(stufe);
-		print("}\n");
+        StringBuilder parameterliste = new StringBuilder();
+        a.getFelder()
+                .stream()
+                .forEach(
+                        p -> parameterliste.append("," + a.getName() + "_" + p));
 
-	}
+        String sParameterListe = parameterliste.toString();
 
-	private void printOutput(FeldReihe io, int stufe) {
-		print(stufe);
-		print("export: " + io.getName() + " (");
+        if (sParameterListe.length() > 1) {
+            print(sParameterListe.substring(1));
+        }
+        print(") {\n");
 
-		Object o[] = verbindungen.stream()
-				.filter(p -> p.getOutName().equals(io.getName()))
-				.sorted(Comparator.comparing(e -> e.getOutIndex())).toArray();
-		int pos = 0;
-		for (int i = 0; i < o.length; i++) {
-			FeldVerbindung c = (FeldVerbindung) o[i];
-			while (pos < c.getOutIndex()) {
-				if (pos > 0) {
-					print(",");
-				}
-				print("unbestimmt");
-				pos++;
-			}
-			if (pos > 0 ) {
-				print(",");
-			}
-			
-			print(c.getInName() + "_" + register.getFeldName(c));
-			pos++;
-		}
-		print(")\n");
+        for (FeldReihe io : a.getChilds()) {
+            if (io instanceof Abfrage) {
+                print((Abfrage) io, stufe + 1);
+            } else {
+                printOutput(io, stufe + 1);
+            }
+        }
+        print(stufe);
+        print("}\n");
 
-	}
+    }
+
+    private void printOutput(FeldReihe io, int stufe) {
+        print(stufe);
+        print("export: " + io.getName() + " (");
+
+        Object o[] = verbindungen.stream()
+                .filter(p -> p.getOutName().equals(io.getName()))
+                .sorted(Comparator.comparing(e -> e.getOutIndex())).toArray();
+        int pos = 0;
+        for (int i = 0; i < o.length; i++) {
+            FeldVerbindung c = (FeldVerbindung) o[i];
+            while (pos < c.getOutIndex()) {
+                if (pos > 0) {
+                    print(",");
+                }
+                print("unbestimmt");
+                pos++;
+            }
+            if (pos > 0) {
+                print(",");
+            }
+
+            print(c.getInName() + "_" + register.getFeldName(c));
+            pos++;
+        }
+        print(")\n");
+
+    }
 
 }
